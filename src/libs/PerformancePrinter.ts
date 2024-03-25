@@ -42,7 +42,8 @@ export class PerformancePrinter {
 
   // METHOD
   public print (options: {
-    target?: string | number
+    target?: string
+    sort?: 'default' | 'ascending' | 'descending'
     highlight?: Partial<Record<Color, string>>
   } = {}): void {
 
@@ -52,27 +53,32 @@ export class PerformancePrinter {
       return { ...current, average, difference }
     })
 
-    let target = (typeof options.target === 'number') ? options.target : 0
-    if (typeof options.target === 'string') {
-      if (performances[options.target] !== undefined) target = performances[options.target].average
-    }
-
     const array = dictionary(performances).array((current) => (current))
-    array.sort((a, b) => (a.index - b.index))
+
+    const sort = options.sort ?? 'default'
+    array.sort((a, b) => {
+      if (sort === 'ascending') return (a.average - b.average)
+      if (sort === 'descending') return (b.average - a.average)
+      return (a.index - b.index)
+    })
 
     if (array.length < 1) {
       stdout.write('No results to display!\n')
       return
     }
 
-    const utils = array.reduce((prev, current) => {
-      prev.maxAverage = Math.max(prev.maxAverage, current.average)
-      prev.minAverage = Math.min(prev.minAverage, current.average)
-      prev.maxNameSize = Math.max(prev.maxNameSize, current.name.length)
+    const data = array.reduce((prev, current) => {
+      prev.max = Math.max(prev.max, current.average)
+      prev.min = Math.min(prev.min, current.average)
       return prev
-    }, { minAverage: Infinity, maxAverage: 0, maxNameSize: 0 })
+    }, { min: Infinity, max: 0 })
 
-    if (options.target === undefined) target = utils.minAverage
+    let target = data.min
+
+    if (options.target !== undefined) {
+      const item = performances[options.target]
+      if (item !== undefined) target = item.average
+    }
 
     const colors = dictionary(options.highlight ?? {}).remake((name, color) => {
       return [name, color as Color]
@@ -82,7 +88,7 @@ export class PerformancePrinter {
 
     array.forEach((current) => {
 
-      const progress = current.average * 100 / utils.maxAverage
+      const progress = current.average * 100 / data.max
       const difference = maths.round((current.average * 100 / target) - 100)
 
       const highlight = colors[current.name] ?? 'reset'
@@ -91,7 +97,7 @@ export class PerformancePrinter {
       const color = (difference > 0) ? 'red' : (difference < 0) ? 'green' : 'yellow'
 
       output.push([
-        current.name.padStart(utils.maxNameSize, ' '),
+        current.name,
         chalk.bold[color](decorator),
         (difference === 0) ? '-' : Math.abs(difference) + '%',
         `${chalk.bold[highlight](bar)} ${maths.round(current.average, 4)}ms`,
