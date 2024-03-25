@@ -38,6 +38,7 @@
     "typescript": "5.4.3"
   },
   "dependencies": {
-    "@shvmerc/development": "0.1.0-alpha"
+    "@shvmerc/development": "0.1.0-alpha",
+    "chalk": "4.1.2"
   }
 }

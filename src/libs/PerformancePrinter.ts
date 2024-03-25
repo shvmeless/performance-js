@@ -1,8 +1,13 @@
-// IMPORTS
+//  IMPORTS
 import { type CodePerformance } from './interfaces'
 import { dictionary } from '@shvmerc/development'
 import { maths } from '../utils/maths'
 import { stdout } from 'process'
+import chalk from 'chalk'
+
+// TYPES
+const colors = ['red', 'green', 'yellow', 'blue', 'magenta', 'cyan'] as const
+export type Color = typeof colors[number]
 
 // FUNCTION
 function progressBar (percent: number, width = 50): string {
@@ -35,7 +40,9 @@ export class PerformancePrinter {
   }
 
   // METHOD
-  public print (): void {
+  public print (options: {
+    highlight?: Partial<Record<Color, string>>
+  } = {}): void {
 
     const performances = dictionary(this._performances).map((current) => {
       const average = maths.average(...current.values)
@@ -56,13 +63,20 @@ export class PerformancePrinter {
       return prev
     }, { maxAverage: 0, maxNameSize: 0 })
 
+    const colors = dictionary(options.highlight ?? {}).remake((name, color) => {
+      return [name, color as Color]
+    })
+
     array.forEach((current) => {
 
       const progress = current.average * 100 / utils.maxAverage
 
+      const highlight = colors[current.name] ?? 'reset'
+      const bar = progressBar(progress, 50)
+
       const output: Array<string> = []
       output.push(current.name.padStart(utils.maxNameSize, ' '))
-      output.push(progressBar(progress, 50))
+      output.push(chalk.bold[highlight as Color](bar))
       output.push(`${maths.round(current.average, 4)}ms`)
 
       stdout.write(`${output.join(' ')}\n`)
