@@ -1,4 +1,5 @@
 // IMPORTS
+import { NoProgressPrinter, type ProgressPrinter } from './ProgressPrinter'
 import { type CodePerformance } from './interfaces'
 import { Dictionary } from '@shvmerc/development'
 
@@ -21,11 +22,14 @@ export class CodeRunner {
   }
 
   // METHOD
-  public run (repetitions: number): Record<string, CodePerformance> {
+  public run (repetitions: number, options: { printer?: ProgressPrinter } = {}): Record<string, CodePerformance> {
 
     this._performances.forEach((current) => {
       current.values = []
     })
+
+    const printer = options.printer ?? new NoProgressPrinter()
+    printer.start(repetitions)
 
     for (let i = 1; i <= repetitions; i++) {
       this._performances.forEach((current) => {
@@ -34,7 +38,10 @@ export class CodeRunner {
         const end = performance.now()
         current.values.push(end - start)
       })
+      printer.refresh(i, repetitions)
     }
+
+    printer.done(repetitions)
 
     return this._performances.value()
 
