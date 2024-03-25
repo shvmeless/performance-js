@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "@shvmerc/development": "0.1.0-alpha",
-    "chalk": "4.1.2"
+    "chalk": "4.1.2",
+    "table": "6.8.1"
   }
 }
