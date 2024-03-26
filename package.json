@@ -1,7 +1,7 @@
 {
-  "name": "@shvmerc/performance-js",
-  "description": "A JavaScript tool to compare the performance of different functions.",
-  "version": "0.0.1",
+  "name": "@shvmerc/performance",
+  "description": "A JavaScript tool to compare the performance difference between different algorithms, functions or versions of the same code.",
+  "version": "0.1.0-alpha",
   "license": "MIT",
   "author": {
     "name": "Luciano Aedo Puga",
